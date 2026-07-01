@@ -26,8 +26,10 @@ def inject_css(dark: bool = False):
     """Inject the global stylesheet. Light is the polished default."""
     if dark:
         bg, card, ink, muted, line = "#0B1220", "#111C33", "#E2E8F0", "#94A3B8", "#1E293B"
+        bd, field = "#334155", "#0F1B33"
     else:
         bg, card, ink, muted, line = BG, CARD, INK, MUTED, LINE
+        bd, field = "#CBD5E1", "#FFFFFF"
 
     st.markdown(f"""
     <style>
@@ -71,13 +73,65 @@ def inject_css(dark: bool = False):
     button[data-baseweb="tab"] {{ font-weight: 600; }}
     [data-baseweb="tab-highlight"] {{ background: {PRIMARY} !important; }}
 
+    /* ---------- Interactive widgets: readable on any base theme ---------- */
     /* Buttons */
-    .stButton > button {{ border-radius: 10px; font-weight: 600; }}
-    .stButton > button[kind="primary"] {{ background: {PRIMARY}; border: none; }}
+    .block-container .stButton > button {{
+        background: {card} !important; color: {ink} !important;
+        border: 1px solid {bd} !important; border-radius: 10px !important; font-weight: 600 !important;
+    }}
+    .block-container .stButton > button:hover {{ border-color: {PRIMARY} !important; color: {PRIMARY} !important; }}
+    .block-container .stButton > button[kind="primary"],
+    .stDownloadButton > button,
+    [data-testid="stFormSubmitButton"] > button {{
+        background: {PRIMARY} !important; color: #FFFFFF !important; border: none !important;
+        border-radius: 10px !important; font-weight: 600 !important;
+    }}
+    .stDownloadButton > button:hover, [data-testid="stFormSubmitButton"] > button:hover {{ filter: brightness(1.06); color:#fff !important; }}
 
-    /* Data frames & expanders */
-    [data-testid="stDataFrame"] {{ border: 1px solid {line}; border-radius: 12px; }}
-    [data-testid="stExpander"] {{ border: 1px solid {line}; border-radius: 12px; }}
+    /* File uploader */
+    [data-testid="stFileUploaderDropzone"], [data-testid="stFileUploader"] section {{
+        background: {field} !important; border: 1px dashed {bd} !important;
+    }}
+    [data-testid="stFileUploader"] label, [data-testid="stFileUploader"] span,
+    [data-testid="stFileUploader"] small, [data-testid="stFileUploaderDropzoneInstructions"] * {{ color: {ink} !important; }}
+    [data-testid="stFileUploader"] button {{ background: {card} !important; color: {ink} !important; border: 1px solid {bd} !important; }}
+
+    /* Text / number / date inputs, textareas, select display box */
+    .block-container [data-baseweb="input"], .block-container [data-baseweb="base-input"],
+    .block-container [data-baseweb="select"] > div, .block-container textarea,
+    .block-container .stTextInput input, .block-container .stNumberInput input,
+    .block-container .stDateInput input {{
+        background: {field} !important; color: {ink} !important; border-color: {bd} !important;
+    }}
+    .block-container [data-baseweb="select"] *, .block-container input, .block-container textarea {{ color: {ink} !important; }}
+
+    /* Dropdown / calendar popovers (rendered at document root) */
+    [data-baseweb="popover"] [role="listbox"], [data-baseweb="menu"],
+    [data-baseweb="popover"] ul, [data-baseweb="calendar"] {{ background: {card} !important; }}
+    [data-baseweb="popover"] [role="option"], [data-baseweb="popover"] li, [role="option"] * {{ color: {ink} !important; }}
+
+    /* Tabs */
+    button[data-baseweb="tab"] {{ color: {muted} !important; font-weight: 600; }}
+    button[data-baseweb="tab"][aria-selected="true"] {{ color: {PRIMARY} !important; }}
+
+    /* Expander */
+    [data-testid="stExpander"] {{ border: 1px solid {line}; border-radius: 12px; overflow: hidden; }}
+    [data-testid="stExpander"] summary {{ background: {card} !important; }}
+    [data-testid="stExpander"] summary, [data-testid="stExpander"] summary * {{ color: {ink} !important; }}
+
+    /* Main-area labels, radios, checkboxes, alerts */
+    .block-container [data-testid="stWidgetLabel"] *,
+    .block-container .stRadio label, .block-container .stCheckbox label {{ color: {ink} !important; }}
+    .block-container [data-testid="stAlert"] * {{ color: {ink} !important; }}
+
+    /* Data frames / editors */
+    [data-testid="stDataFrame"], [data-testid="stDataEditor"] {{ border: 1px solid {line}; border-radius: 12px; }}
+    [data-testid="stDataFrame"] > div, [data-testid="stDataEditor"] > div {{
+        --gdg-bg-cell: {field}; --gdg-bg-cell-medium: {bg}; --gdg-text-dark: {ink};
+        --gdg-text-medium: {muted}; --gdg-text-light: {muted}; --gdg-bg-header: {card};
+        --gdg-bg-header-hovered: {bg}; --gdg-bg-header-has-focus: {bg};
+        --gdg-border-color: {line}; --gdg-text-header: {ink}; --gdg-accent-color: {PRIMARY};
+    }}
 
     /* Section header block */
     .sd-header {{ margin: 0 0 1.1rem 0; }}
