@@ -135,7 +135,7 @@ def main():
     )
 
     role = st.sidebar.selectbox("Role", config.ROLES, index=1)  # default PM
-    theme = st.sidebar.radio("Theme", ["Light", "Dark"], horizontal=True)
+    theme = st.sidebar.radio("Theme", ["Dark", "Light"], horizontal=True)
     from modules import theme as _theme
     _theme.inject_css(dark=(theme == "Dark"))
 

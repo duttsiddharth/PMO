@@ -21,9 +21,15 @@ PALETTE_SEQ = ["#2563EB", "#0EA5E9", "#14B8A6", "#8B5CF6",
 
 RAG = {"Green": "#16A34A", "Amber": "#F59E0B", "Red": "#DC2626"}
 
+# Set by inject_css so charts/cards can adapt to the active theme.
+_DARK = True
 
-def inject_css(dark: bool = False):
-    """Inject the global stylesheet. Light is the polished default."""
+
+def inject_css(dark: bool = True):
+    """Inject the global stylesheet. Dark is the default (matches Streamlit
+    Cloud's base theme, so data grids stay consistent)."""
+    global _DARK
+    _DARK = dark
     if dark:
         bg, card, ink, muted, line = "#0B1220", "#111C33", "#E2E8F0", "#94A3B8", "#1E293B"
         bd, field = "#334155", "#0F1B33"
@@ -168,11 +174,21 @@ _TONES = {
     "neutral": ("#475569", "#F8FAFC", "📄"),
 }
 
+_TONES_DARK = {
+    "info": ("#60A5FA", "#0F1E38", "ℹ️"),
+    "success": ("#4ADE80", "#0C2A1C", "✅"),
+    "warning": ("#FBBF24", "#2A1E0A", "⚠️"),
+    "danger": ("#F87171", "#2A1414", "🚨"),
+    "neutral": ("#94A3B8", "#111C33", "📄"),
+}
+
 
 def summary_card(title: str, body: str, tone: str = "info"):
-    color, bg, icon = _TONES.get(tone, _TONES["info"])
+    tones = _TONES_DARK if _DARK else _TONES
+    color, bg, icon = tones.get(tone, tones["info"])
+    border = color + "44" if _DARK else color + "22"
     st.markdown(
-        f"<div class='sd-card' style='background:{bg};border-color:{color}22'>"
+        f"<div class='sd-card' style='background:{bg};border-color:{border}'>"
         f"<div class='sd-card-title' style='color:{color}'>{icon} {title}</div>"
         f"<div class='sd-card-body'>{body}</div></div>",
         unsafe_allow_html=True,
@@ -185,29 +201,41 @@ def rag_pill(health: str) -> str:
             f"border-radius:999px;font-size:.8rem;font-weight:600'>{health}</span>")
 
 
+def fg_color() -> str:
+    """Foreground text colour for the active theme (inline chart text)."""
+    return "#E2E8F0" if _DARK else INK
+
+
 def style_fig(fig, height: int | None = None, show_legend: bool = True):
-    """Apply the shared Plotly theme to any figure."""
+    """Apply the shared Plotly theme to any figure (adapts to dark/light)."""
+    if _DARK:
+        fc, grid, line_c, title_c, hover_bg = "#CBD5E1", "#1E293B", "#334155", "#F1F5F9", "#111C33"
+    else:
+        fc, grid, line_c, title_c, hover_bg = "#334155", "#EEF2F6", LINE, INK, "#FFFFFF"
+
     fig.update_layout(
-        font=dict(family="Inter, system-ui, sans-serif", size=13, color="#334155"),
-        title=dict(font=dict(size=15.5, color=INK, family="Inter"),
+        font=dict(family="Inter, system-ui, sans-serif", size=13, color=fc),
+        title=dict(font=dict(size=15.5, color=title_c, family="Inter"),
                    x=0, xanchor="left", pad=dict(b=10)),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         colorway=PALETTE_SEQ,
         margin=dict(t=52, b=10, l=10, r=10),
-        hoverlabel=dict(bgcolor="white", font_size=12, font_family="Inter",
-                        bordercolor=LINE),
+        hoverlabel=dict(bgcolor=hover_bg, font_size=12, font_family="Inter",
+                        font_color=fc, bordercolor=line_c),
     )
     if show_legend:
         fig.update_layout(legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                                      xanchor="right", x=1, font=dict(size=11),
+                                      xanchor="right", x=1, font=dict(size=11, color=fc),
                                       bgcolor="rgba(0,0,0,0)"))
     else:
         fig.update_layout(showlegend=False)
-    fig.update_xaxes(showgrid=True, gridcolor="#EEF2F6", zeroline=False,
-                     linecolor=LINE, ticks="outside", tickcolor=LINE, tickfont=dict(size=11))
-    fig.update_yaxes(showgrid=True, gridcolor="#EEF2F6", zeroline=False,
-                     linecolor=LINE, tickfont=dict(size=11))
+    fig.update_xaxes(showgrid=True, gridcolor=grid, zeroline=False,
+                     linecolor=line_c, ticks="outside", tickcolor=line_c,
+                     tickfont=dict(size=11, color=fc), title_font=dict(color=fc))
+    fig.update_yaxes(showgrid=True, gridcolor=grid, zeroline=False,
+                     linecolor=line_c, tickfont=dict(size=11, color=fc),
+                     title_font=dict(color=fc))
     if height:
         fig.update_layout(height=height)
     return fig

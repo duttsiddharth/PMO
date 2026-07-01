@@ -9,7 +9,7 @@ from core.ai import executive_summary, predict_schedule_delay
 from modules.common import (
     list_projects, project_picker, project_evm, section_title,
 )
-from modules.theme import style_fig, summary_card, rag_pill, RAG, PALETTE_SEQ
+from modules.theme import style_fig, summary_card, rag_pill, RAG, PALETTE_SEQ, fg_color
 
 
 def _portfolio_overview():
@@ -51,7 +51,7 @@ def _portfolio(dfp):
                 textinfo="value", textfont=dict(size=14, color="#fff"))])
             fig.update_layout(title="Portfolio Health (RAG)",
                               annotations=[dict(text=f"{len(dfp)}<br>projects", x=0.5, y=0.5,
-                                                font=dict(size=15, color="#0F172A"), showarrow=False)])
+                                                font=dict(size=15, color=fg_color()), showarrow=False)])
             st.plotly_chart(style_fig(fig, height=330), width='stretch',
                             config={"displayModeBar": False})
 
