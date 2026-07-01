@@ -4,23 +4,82 @@ Reads from environment variables where present so the same code base can run
 on SQLite (default, zero-config) or PostgreSQL in production.
 """
 import os
+import tempfile
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-DATA_DIR.mkdir(exist_ok=True)
+
+
+def _setting(name: str, default: str = "") -> str:
+    """Read a setting from environment first, then Streamlit secrets.
+
+    On Streamlit Community Cloud, values pasted into the Secrets box are exposed
+    as environment variables, but reading st.secrets as a fallback makes the
+    same code work whether secrets arrive as env vars or a secrets.toml.
+    """
+    val = os.getenv(name)
+    if val:
+        return val
+    try:
+        import streamlit as st  # optional; absent in pure-CLI contexts
+        if hasattr(st, "secrets") and name in st.secrets:
+            return str(st.secrets[name])
+    except Exception:
+        pass
+    return default
+
+
+def _normalize_db_url(url: str) -> str:
+    """Make common Postgres/Supabase DSNs work with SQLAlchemy 2.0 + psycopg2.
+
+    Supabase and many providers hand out 'postgres://...' or 'postgresql://...'.
+    SQLAlchemy 2.0 needs an explicit driver, so we route both to psycopg2.
+    """
+    if url.startswith("postgres://"):
+        url = "postgresql+psycopg2://" + url[len("postgres://"):]
+    elif url.startswith("postgresql://"):
+        url = "postgresql+psycopg2://" + url[len("postgresql://"):]
+    return url
+
+
+def _writable_data_dir() -> Path:
+    """Return a directory we can actually write the SQLite file into.
+
+    On platforms like Streamlit Community Cloud the cloned repo tree
+    (/mount/src/...) is read-only, so creating the .db file inside the project
+    fails with 'unable to open database file'. We try the project ./data dir
+    first; if it isn't writable we fall back to a temp directory.
+    """
+    candidate = BASE_DIR / "data"
+    try:
+        candidate.mkdir(parents=True, exist_ok=True)
+        probe = candidate / ".write_test"
+        probe.touch()
+        probe.unlink()
+        return candidate
+    except OSError:
+        fallback = Path(tempfile.gettempdir()) / "pm_toolkit_data"
+        fallback.mkdir(parents=True, exist_ok=True)
+        return fallback
+
+
+DATA_DIR = _writable_data_dir()
 
 # --- Database -------------------------------------------------------------
-# Default: local SQLite file. Set PM_DATABASE_URL to a PostgreSQL DSN to
-# switch, e.g. postgresql+psycopg2://user:pass@host:5432/pmtoolkit
-DATABASE_URL = os.getenv(
-    "PM_DATABASE_URL",
-    f"sqlite:///{DATA_DIR / 'pm_toolkit.db'}",
-)
+# Default: local SQLite file (in a writable dir). Set PM_DATABASE_URL to a
+# PostgreSQL DSN to switch, e.g.
+#   postgresql+psycopg2://user:pass@host:5432/pmtoolkit
+# A persistent Postgres/Supabase URL is recommended for cloud hosting, since
+# the SQLite fallback lives in ephemeral storage and resets on reboot.
+_raw_db_url = _setting("PM_DATABASE_URL", f"sqlite:///{DATA_DIR / 'pm_toolkit.db'}")
+DATABASE_URL = _normalize_db_url(_raw_db_url)
+
+# True when backed by a persistent server DB (not ephemeral SQLite).
+IS_PERSISTENT_DB = not DATABASE_URL.startswith("sqlite")
 
 # --- Branding -------------------------------------------------------------
 APP_NAME = "IT Infrastructure PM Toolkit"
-ORG_NAME = os.getenv("PM_ORG_NAME", "SD Advisory")
+ORG_NAME = _setting("PM_ORG_NAME", "SD Advisory")
 THEME_PRIMARY = "#2563EB"
 
 # --- Roles ----------------------------------------------------------------
@@ -45,8 +104,8 @@ ROLE_VISIBILITY = {
 # If set, the AI helpers in core/ai.py call the Anthropic API. If unset, the
 # toolkit falls back to deterministic template-based summaries so it always
 # runs offline.
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-AI_MODEL = os.getenv("PM_AI_MODEL", "claude-sonnet-4-6")
+ANTHROPIC_API_KEY = _setting("ANTHROPIC_API_KEY", "")
+AI_MODEL = _setting("PM_AI_MODEL", "claude-sonnet-4-6")
 
 PROJECT_TYPES = [
     "Telecom", "WAN", "LAN", "SD-WAN", "Network Refresh", "Firewall",

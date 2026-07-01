@@ -2,13 +2,17 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from modules.theme import style_fig
 
 from core import models as m
 from modules.common import get_session, section_title
+from core.crud import editable_grid
 
 
 def render():
     section_title("Resource Management", "Team directory, skills, allocation and utilisation")
+    with st.expander("✏️ Edit resources (inline grid: add / edit / delete)"):
+        editable_grid(m.Resource, key="res_grid")
     s = get_session()
     resources = s.query(m.Resource).all()
 
@@ -18,7 +22,7 @@ def render():
         df = pd.DataFrame([{ "Name": r.name, "Role": r.role, "Skills": r.skills,
                              "Cost/hr": r.cost_rate, "Capacity (h/wk)": r.capacity_hours}
                            for r in resources])
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, width='stretch', hide_index=True)
         # Skills matrix (resource x skill presence)
         all_skills = sorted({sk.strip() for r in resources for sk in (r.skills or "").split(",") if sk.strip()})
         matrix = []
@@ -27,7 +31,7 @@ def render():
             matrix.append({"Resource": r.name, **{sk: ("✓" if sk in owned else "") for sk in all_skills}})
         if matrix:
             st.markdown("**Skills Matrix**")
-            st.dataframe(pd.DataFrame(matrix), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(matrix), width='stretch', hide_index=True)
 
     with tab_alloc:
         allocs = s.query(m.Allocation).all()
@@ -45,8 +49,8 @@ def render():
                                              "Available": "#16A34A"}, title="Resource Utilisation")
             fig.add_hline(y=100, line_dash="dash", line_color="grey")
             fig.update_layout(height=360, margin=dict(t=40))
-            st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(adf, use_container_width=True, hide_index=True)
+            st.plotly_chart(style_fig(fig), width='stretch', config={"displayModeBar": False})
+            st.dataframe(adf, width='stretch', hide_index=True)
         else:
             st.info("No allocations yet.")
 
@@ -62,7 +66,7 @@ def render():
             fig = px.line(agg, x="Week ending", y=["Planned h", "Actual h"], markers=True,
                           title="Planned vs Actual Hours")
             fig.update_layout(height=320, margin=dict(t=40))
-            st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(tdf, use_container_width=True, hide_index=True)
+            st.plotly_chart(style_fig(fig), width='stretch', config={"displayModeBar": False})
+            st.dataframe(tdf, width='stretch', hide_index=True)
         else:
             st.info("No timesheet data yet.")

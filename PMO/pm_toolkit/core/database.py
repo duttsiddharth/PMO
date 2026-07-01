@@ -12,9 +12,18 @@ import config
 from core.models import Base
 
 # SQLite needs check_same_thread disabled for Streamlit's threading model.
-_connect_args = {"check_same_thread": False} if config.DATABASE_URL.startswith("sqlite") else {}
+_is_sqlite = config.DATABASE_URL.startswith("sqlite")
+_connect_args = {"check_same_thread": False} if _is_sqlite else {}
 
-engine = create_engine(config.DATABASE_URL, echo=False, connect_args=_connect_args, future=True)
+# Pooling: pre-ping drops dead connections; for server DBs keep a small,
+# recycled pool so long-running Streamlit processes never exhaust connections.
+_engine_kwargs = dict(echo=False, connect_args=_connect_args, future=True,
+                      pool_pre_ping=True)
+if not _is_sqlite:
+    _engine_kwargs.update(pool_size=5, max_overflow=5, pool_recycle=1800,
+                          pool_timeout=30)
+
+engine = create_engine(config.DATABASE_URL, **_engine_kwargs)
 SessionFactory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False, future=True)
 Session = scoped_session(SessionFactory)
 

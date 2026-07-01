@@ -2,6 +2,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+from modules.theme import style_fig
 
 from modules.common import project_picker, get_session, section_title, list_projects
 
@@ -20,7 +21,7 @@ def render():
         fig = go.Figure(go.Bar(x=pdf["Project"], y=pdf["Compliance %"], marker_color="#2563EB"))
         fig.update_layout(title="Portfolio PMO Compliance %", height=300, margin=dict(t=40),
                           yaxis=dict(range=[0, 100]))
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(style_fig(fig), width='stretch', config={"displayModeBar": False})
 
     p = project_picker(key="pmo_proj")
     s = get_session()

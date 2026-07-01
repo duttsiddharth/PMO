@@ -36,7 +36,7 @@ def render():
         data = pd.DataFrame([{ "Name": x.name, "Org": x.org, "Role": x.role,
                                "Influence": x.influence, "Interest": x.interest,
                                "RACI": x.raci, "Contact": x.contact} for x in p.stakeholders])
-        st.dataframe(data, use_container_width=True, hide_index=True)
+        st.dataframe(data, width='stretch', hide_index=True)
         with st.expander("Add stakeholder"):
             with st.form("add_stake"):
                 cols = st.columns(3)
@@ -56,4 +56,4 @@ def render():
         st.caption("RACI = Responsible / Accountable / Consulted / Informed")
         raci_df = pd.DataFrame([{ "Stakeholder": x.name, "Role": x.role, "RACI": x.raci}
                                 for x in p.stakeholders])
-        st.dataframe(raci_df, use_container_width=True, hide_index=True)
+        st.dataframe(raci_df, width='stretch', hide_index=True)

@@ -3,9 +3,11 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+from modules.theme import style_fig
 
 from core import models as m
 from modules.common import project_picker, get_session, section_title
+from core.crud import editable_grid
 
 SEV_COLORS = {"Low": "#16A34A", "Medium": "#F59E0B", "High": "#F97316", "Critical": "#DC2626"}
 
@@ -28,13 +30,16 @@ def render():
     p = project_picker(key="raid_proj")
     s = get_session()
 
+    with st.expander("✏️ Edit all RAID records (inline grid: add / edit / delete)"):
+        editable_grid(m.RaidItem, scope_fk="project_id", scope_id=p.id, key=f"raid_grid_{p.id}")
+
     tabs = st.tabs(["Risks", "Assumptions", "Issues", "Dependencies", "Risk Heat Map"])
     cats = ["Risk", "Assumption", "Issue", "Dependency"]
 
     for tab, cat in zip(tabs[:4], cats):
         with tab:
             df = _raid_table(p.raid, cat)
-            st.dataframe(df, use_container_width=True, hide_index=True)
+            st.dataframe(df, width='stretch', hide_index=True)
             with st.expander(f"Add {cat}"):
                 with st.form(f"add_{cat}"):
                     title = st.text_input("Title")
@@ -68,10 +73,10 @@ def render():
             text=grid, texttemplate="%{text}", showscale=True))
         fig.update_layout(title="Risk Heat Map (Probability × Impact)",
                           xaxis_title="Impact", yaxis_title="Probability", height=420)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(style_fig(fig), width='stretch', config={"displayModeBar": False})
 
         top = sorted(risks, key=lambda r: r.risk_score, reverse=True)[:5]
         st.markdown("**Top Risks by Exposure**")
         st.dataframe(pd.DataFrame([{ "Title": r.title, "Owner": r.owner, "Score": r.risk_score,
                                      "Severity": r.severity, "Status": r.status} for r in top]),
-                     use_container_width=True, hide_index=True)
+                     width='stretch', hide_index=True)

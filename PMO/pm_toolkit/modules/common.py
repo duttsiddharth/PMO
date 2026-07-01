@@ -50,9 +50,8 @@ def rag_badge(health: str) -> str:
 
 
 def section_title(text: str, subtitle: str = ""):
-    st.markdown(f"### {text}")
-    if subtitle:
-        st.caption(subtitle)
+    from modules.theme import header
+    header(text, subtitle)
 
 
 def project_picker(key="proj"):

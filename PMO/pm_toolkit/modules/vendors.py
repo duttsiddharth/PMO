@@ -4,6 +4,7 @@ import streamlit as st
 
 from core import models as m
 from modules.common import project_picker, get_session, section_title
+from core.crud import editable_grid
 
 
 def render():
@@ -13,10 +14,12 @@ def render():
     tab_v, tab_po = st.tabs(["Vendor Master & SLA", "Purchase Orders"])
 
     with tab_v:
+        with st.expander("✏️ Edit vendors (inline grid: add / edit / delete)"):
+            editable_grid(m.Vendor, key="vendor_grid")
         vendors = s.query(m.Vendor).all()
         vdf = pd.DataFrame([{ "Vendor": v.name, "Category": v.category, "Contact": v.contact,
                               "SLA Target": v.sla_target, "SLA Status": v.sla_status} for v in vendors])
-        st.dataframe(vdf, use_container_width=True, hide_index=True)
+        st.dataframe(vdf, width='stretch', hide_index=True)
         with st.expander("Add vendor"):
             with st.form("add_vendor"):
                 c = st.columns(2)
@@ -32,6 +35,8 @@ def render():
 
     with tab_po:
         p = project_picker(key="po_proj")
+        with st.expander("✏️ Edit purchase orders (inline grid: add / edit / delete)"):
+            editable_grid(m.PurchaseOrder, scope_fk="project_id", scope_id=p.id, key=f"po_grid_{p.id}")
         pos = s.query(m.PurchaseOrder).filter_by(project_id=p.id).all()
         vendor_name = {v.id: v.name for v in s.query(m.Vendor).all()}
         pdf = pd.DataFrame([{ "PO #": po.po_number, "Vendor": vendor_name.get(po.vendor_id, "-"),
@@ -43,4 +48,4 @@ def render():
             k[0].metric("Total POs", len(pdf))
             k[1].metric("PO value", f"{pdf['Amount'].sum():,.0f}")
             k[2].metric("Delivered", int((pdf["Delivery"] == "Delivered").sum()))
-        st.dataframe(pdf, use_container_width=True, hide_index=True)
+        st.dataframe(pdf, width='stretch', hide_index=True)

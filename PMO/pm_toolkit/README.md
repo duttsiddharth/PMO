@@ -125,21 +125,45 @@ EAC), seeding + ORM relationships, and that all four report formats build.
 
 ---
 
+## What's new in v2
+
+- **Full CRUD** — a new **Data Management** page gives add / edit / delete via
+  inline editable grids over every entity (global tables and project-scoped
+  tables), driven by a generic metadata engine (`core/crud.py`) that works for
+  any model with zero per-entity code.
+- **Inline editing in context** — RAID Management and Budget & Financials now
+  include "✏️ Edit" grids so you can add/edit/delete records right where you
+  view them.
+- **Bulk import / export** — upload CSV or Excel to bulk-add rows, download a
+  blank template per entity, and export any table to CSV/Excel.
+- **Persistent database support** — point `PM_DATABASE_URL` at Supabase/Postgres
+  for data that survives reboots. `postgres://` and `postgresql://` DSNs are
+  auto-normalised; the **Settings** page shows the active backend, a persistence
+  indicator and a one-click connection test, plus step-by-step Supabase setup.
+- **Future-proofed** for 2026+ Streamlit (`width='stretch'`, timezone-aware
+  timestamps) — runs warning-free.
+- **Professional UI theme** — a runtime-injected stylesheet (Inter font, KPI
+  cards, dark sidebar rail, bordered panels) and a single shared Plotly theme
+  (`modules/theme.py`) applied to every chart, so the dashboard and all modules
+  look consistent and polished. Styling is injected at runtime, so it applies
+  even though Streamlit Cloud reads `config.toml` from the repo root (not this
+  subfolder).
+- **Connection pooling hardened** — scoped sessions are returned to the pool
+  each rerun and Postgres uses pre-ping + recycling, so long-running cloud
+  processes never exhaust database connections.
+
 ## Notes & honest scope
 
-This is a strong, runnable **foundation**, not a finished commercial product.
-Implemented end-to-end: data layer, EVM, dashboards, charts, RAID, change,
-budget, planning/Gantt, migration, quality, compliance, status report and all
-four export formats, with sample data and tests.
+This is a strong, runnable **foundation**. Implemented end-to-end: data layer
+with full CRUD + import/export, EVM, dashboards, charts, RAID, change, budget,
+planning/Gantt, migration, quality, compliance, status report and all four
+export formats, with sample data and tests.
 
 Lighter / extension points you may want to build out for production:
 - Persisted authentication (current RBAC is a role selector, not a login)
-- Editable inline grids on every table (several use add-forms + read views)
 - MS Project (.mpp/XML) import/export and email notifications (bonus items)
 - AI risk/delay prediction is currently heuristic; wire `core/ai.py` to the
   Anthropic API (set `ANTHROPIC_API_KEY`) for model-generated narratives
-- A newer Streamlit may warn that `use_container_width` is deprecated in favour
-  of `width=`; the calls still function. Swap them if you pin a 2026+ release.
 
 The modular layout means new modules slot in by adding a `render()` and one line
 to the `NAV` registry in `app.py`.

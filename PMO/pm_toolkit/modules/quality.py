@@ -4,6 +4,7 @@ import streamlit as st
 
 from core import models as m
 from modules.common import project_picker, get_session, section_title, project_evm
+from core.crud import editable_grid
 
 
 # ---- Quality -------------------------------------------------------------
@@ -11,10 +12,12 @@ def render_quality():
     section_title("Quality Management", "Audit findings, NCRs, corrective & preventive actions")
     p = project_picker(key="qual_proj")
     s = get_session()
+    with st.expander("✏️ Edit quality items (inline grid: add / edit / delete)"):
+        editable_grid(m.QualityItem, scope_fk="project_id", scope_id=p.id, key=f"qual_grid_{p.id}")
     df = pd.DataFrame([{ "Type": q.item_type, "Finding": q.finding, "Owner": q.owner,
                          "Corrective": q.corrective_action, "Preventive": q.preventive_action,
                          "Status": q.status} for q in p.quality])
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width='stretch', hide_index=True)
     with st.expander("Add quality item"):
         with st.form("add_q"):
             itype = st.selectbox("Type", ["Audit", "NCR", "CAPA", "Acceptance"])
@@ -66,7 +69,7 @@ def render_lessons():
     s = get_session()
     df = pd.DataFrame([{ "Category": l.category, "Summary": l.summary, "Detail": l.detail}
                        for l in p.lessons])
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width='stretch', hide_index=True)
     with st.expander("Add lesson"):
         with st.form("add_lesson"):
             cat = st.selectbox("Category", ["Success", "Challenge", "Recommendation", "Best Practice"])

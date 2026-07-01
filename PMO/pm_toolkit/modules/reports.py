@@ -35,7 +35,7 @@ def render():
 
     st.markdown("**Dataset preview**")
     which = st.selectbox("Dataset", list(frames.keys()))
-    st.dataframe(frames[which], use_container_width=True, hide_index=True)
+    st.dataframe(frames[which], width='stretch', hide_index=True)
 
     st.markdown("**Downloads**")
     c1, c2, c3 = st.columns(3)

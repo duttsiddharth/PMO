@@ -1,7 +1,7 @@
-streamlit>=1.36
+streamlit>=1.49
 plotly>=5.22
 pandas>=2.2
-SQLAlchemy>=2.0
+SQLAlchemy>=2.0.51
 reportlab>=4.1
 python-docx>=1.1
 openpyxl>=3.1

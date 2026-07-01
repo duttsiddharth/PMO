@@ -2,6 +2,7 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from modules.theme import style_fig
 
 from core import models as m
 from modules.common import project_picker, get_session, section_title
@@ -21,7 +22,7 @@ def render():
                               "Planned": t.planned_cost, "Actual": t.actual_cost,
                               "% Complete": t.percent_complete, "Status": t.status}
                             for t in sorted(p.tasks, key=lambda x: x.wbs_code or "")])
-        st.dataframe(wbs, use_container_width=True, hide_index=True)
+        st.dataframe(wbs, width='stretch', hide_index=True)
         crit = wbs[wbs["Critical"] == True]["Task"].tolist() if not wbs.empty else []
         if crit:
             st.info("**Critical path tasks:** " + " → ".join(crit))
@@ -55,14 +56,14 @@ def render():
                               color_discrete_map={"Critical": "#DC2626", "Normal": "#2563EB"})
             fig.update_yaxes(autorange="reversed")
             fig.update_layout(height=420, margin=dict(t=20))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(style_fig(fig), width='stretch', config={"displayModeBar": False})
         else:
             st.info("Add task start/end dates to render the Gantt chart.")
 
     with tab_ms:
         ms = pd.DataFrame([{ "Milestone": x.name, "Due": x.due_date, "Status": x.status}
                            for x in p.milestones])
-        st.dataframe(ms, use_container_width=True, hide_index=True)
+        st.dataframe(ms, width='stretch', hide_index=True)
         with st.expander("Add milestone"):
             with st.form("add_ms"):
                 name = st.text_input("Milestone name")

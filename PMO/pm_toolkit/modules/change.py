@@ -4,6 +4,7 @@ import streamlit as st
 
 from core import models as m
 from modules.common import project_picker, get_session, section_title
+from core.crud import editable_grid
 
 STATUSES = ["Submitted", "Under Review", "Approved", "Rejected"]
 
@@ -12,6 +13,9 @@ def render():
     section_title("Change Management", "Change requests, impact assessment and approval workflow")
     p = project_picker(key="change_proj")
     s = get_session()
+
+    with st.expander("✏️ Edit change requests (inline grid: add / edit / delete)"):
+        editable_grid(m.ChangeRequest, scope_fk="project_id", scope_id=p.id, key=f"cr_grid_{p.id}")
 
     df = pd.DataFrame([{ "CR #": c.cr_number, "Description": c.description,
                          "Scope Impact": c.scope_impact, "Cost Impact": c.cost_impact,
@@ -24,7 +28,7 @@ def render():
         k[1].metric("Approved", int((df["Status"] == "Approved").sum()))
         k[2].metric("Pending", int(df["Status"].isin(["Submitted", "Under Review"]).sum()))
         k[3].metric("Approved cost impact", f"{df[df['Status']=='Approved']['Cost Impact'].sum():,.0f}")
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width='stretch', hide_index=True)
 
     # Update workflow status
     if p.changes:

@@ -6,6 +6,7 @@ import streamlit as st
 
 from core import models as m
 from modules.common import project_picker, get_session, project_evm, section_title
+from core.crud import editable_grid
 
 
 def render():
@@ -13,6 +14,9 @@ def render():
     p = project_picker(key="budget_proj")
     s = get_session()
     e = project_evm(p)
+
+    with st.expander("✏️ Edit budget lines (inline grid: add / edit / delete)"):
+        editable_grid(m.BudgetLine, scope_fk="project_id", scope_id=p.id, key=f"budget_grid_{p.id}")
 
     lines = p.budget_lines
     bdf = pd.DataFrame([{ "Category": b.category, "Description": b.description, "Month": b.month,
@@ -35,7 +39,7 @@ def render():
                   title="Planned vs Actual by Category",
                   color_discrete_map={"Planned": "#2563EB", "Actual": "#F59E0B"})
     fig1.update_layout(height=340, margin=dict(t=40))
-    col1.plotly_chart(fig1, use_container_width=True)
+    col1.plotly_chart(fig1, width='stretch')
 
     by_month = bdf.groupby("Month")[["Planned", "Actual", "Forecast"]].sum().reset_index().sort_values("Month")
     by_month["Cumulative Actual"] = by_month["Actual"].cumsum()
@@ -45,13 +49,13 @@ def render():
                               name="Cumulative (burn)", mode="lines+markers", yaxis="y2"))
     fig2.update_layout(title="Monthly Spend & Burn Rate", height=340, margin=dict(t=40),
                        yaxis2=dict(overlaying="y", side="right", showgrid=False))
-    col2.plotly_chart(fig2, use_container_width=True)
+    col2.plotly_chart(fig2, width='stretch')
 
     # EVM mini-panel
     st.markdown("**Earned Value Snapshot**")
     evm_df = pd.DataFrame([{ "PV": e.pv, "EV": e.ev, "AC": e.ac, "SV": e.sv, "CV": e.cv,
                              "SPI": e.spi, "CPI": e.cpi, "EAC": e.eac, "VAC": e.vac}])
-    st.dataframe(evm_df, use_container_width=True, hide_index=True)
+    st.dataframe(evm_df, width='stretch', hide_index=True)
 
     with st.expander("Add budget line"):
         with st.form("add_budget"):

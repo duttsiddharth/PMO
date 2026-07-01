@@ -2,9 +2,11 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from modules.theme import style_fig
 
 from core import models as m
 from modules.common import project_picker, get_session, section_title
+from core.crud import editable_grid
 
 MIG_TYPES = ["WAN", "LAN", "Data Center", "Cloud", "Firewall", "SD-WAN"]
 STATUSES = ["Planned", "In Progress", "Migrated", "Rolled Back"]
@@ -14,6 +16,9 @@ def render():
     section_title("Migration Tracker", "Site-level cutover status, rollback plans and acceptance")
     p = project_picker(key="mig_proj")
     s = get_session()
+
+    with st.expander("✏️ Edit migration sites (inline grid: add / edit / delete)"):
+        editable_grid(m.MigrationSite, scope_fk="project_id", scope_id=p.id, key=f"mig_grid_{p.id}")
 
     sites = p.migrations
     df = pd.DataFrame([{ "Type": x.migration_type, "Site": x.site, "Scheduled": x.scheduled_date,
@@ -33,8 +38,8 @@ def render():
                                          "Migrated": "#16A34A", "Rolled Back": "#DC2626"},
                      title="Migration Progress")
         fig.update_layout(height=320, margin=dict(t=40), showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+        st.plotly_chart(style_fig(fig), width='stretch', config={"displayModeBar": False})
+    st.dataframe(df, width='stretch', hide_index=True)
 
     with st.expander("Add migration site"):
         with st.form("add_site"):

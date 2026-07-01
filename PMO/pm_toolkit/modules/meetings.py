@@ -21,7 +21,7 @@ def render():
                 st.dataframe(pd.DataFrame([{ "Action": a.description, "Owner": a.owner,
                                              "Due": a.due_date, "Status": a.status}
                                            for a in mtg.action_items]),
-                             use_container_width=True, hide_index=True)
+                             width='stretch', hide_index=True)
 
     # Open actions across project
     open_actions = []
@@ -32,7 +32,7 @@ def render():
                                      "Meeting": mtg.title})
     if open_actions:
         st.markdown("**All Open Action Items**")
-        st.dataframe(pd.DataFrame(open_actions), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(open_actions), width='stretch', hide_index=True)
 
     with st.expander("Log new meeting"):
         with st.form("add_meeting"):

@@ -5,7 +5,7 @@ related records (charter, WBS, RAID, budget, change, vendors, meetings,
 migration, quality, compliance, lessons, acceptance). RAID items share one
 table differentiated by `category` so the four RAID tabs are simple filters.
 """
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from sqlalchemy import (
     Boolean, Column, Date, DateTime, Float, ForeignKey, Integer, String, Text,
@@ -55,7 +55,7 @@ class Project(Base):
     constraints = Column(Text, default="")
     success_criteria = Column(Text, default="")
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     stakeholders = relationship("Stakeholder", back_populates="project", cascade="all, delete-orphan")
     tasks = relationship("WBSTask", back_populates="project", cascade="all, delete-orphan")
