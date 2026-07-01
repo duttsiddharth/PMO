@@ -48,7 +48,7 @@ and Customer see a relevant subset.
 cd pm_toolkit
 python -m venv .venv && source .venv/bin/activate      # optional
 pip install -r requirements.txt
-python -m core.seed          # load 3 sample projects (optional but recommended)
+python -m core.seed          # load the Royal FRS programme (4 sample projects)
 streamlit run app.py
 ```
 

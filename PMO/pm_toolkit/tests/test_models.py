@@ -13,7 +13,8 @@ def test_seed_and_relationships():
     seed()
     s = Session()
     projects = s.query(m.Project).all()
-    assert len(projects) == 3
+    assert len(projects) == 4
+    assert all(p.customer == "Royal FRS" for p in projects)
     p = projects[0]
     assert len(p.tasks) >= 6
     assert len(p.raid) >= 5

@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ```bash
 python -m core.seed
 ```
-Creates `data/pm_toolkit.db` with 3 fully-populated sample projects.
+Creates `data/pm_toolkit.db` with the Royal FRS delivery programme — 4 fully-populated sample projects (WAN, LAN/WLAN, UC&C, Security) grounded in the RFP.
 You can also do this later from the in-app **⚙ Settings** page.
 
 ## 3. Run
