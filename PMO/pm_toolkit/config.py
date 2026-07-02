@@ -83,21 +83,50 @@ ORG_NAME = _setting("PM_ORG_NAME", "SD Advisory")
 THEME_PRIMARY = "#2563EB"
 
 # --- Roles ----------------------------------------------------------------
-ROLES = ["Admin", "PM", "Team Member", "Customer"]
+ROLES = ["Admin", "PM", "Sponsor", "Team Member", "Vendor", "Customer"]
+
+# Delivery lifecycle stages shown on the Delivery Board rail. These map 1:1
+# to the existing Project.status values, so no data migration is required.
+STAGES = ["Presales", "Planning", "Execution", "Closure"]
 
 # Which navigation sections each role may open. Admin/PM see everything.
 ROLE_VISIBILITY = {
     "Admin": "*",
     "PM": "*",
+    "Sponsor": [
+        "Executive Dashboard", "Delivery Board", "Budget & Financials",
+        "RAID Management", "Change Management", "Weekly Status Report",
+        "PMO Compliance", "Reports & Exports",
+    ],
     "Team Member": [
-        "Executive Dashboard", "Project Planning", "Resource Management",
-        "RAID Management", "Meeting Management", "Migration Tracker",
-        "Quality Management", "Weekly Status Report",
+        "Executive Dashboard", "Delivery Board", "Project Planning",
+        "Resource Management", "RAID Management", "Meeting Management",
+        "Migration Tracker", "Quality Management", "Weekly Status Report",
+    ],
+    "Vendor": [
+        "Delivery Board", "Vendor & Procurement", "Migration Tracker",
+        "Weekly Status Report",
     ],
     "Customer": [
-        "Executive Dashboard", "Customer Acceptance", "Weekly Status Report",
-        "PMO Compliance",
+        "Executive Dashboard", "Delivery Board", "Customer Acceptance",
+        "Weekly Status Report", "PMO Compliance",
     ],
+}
+
+# Edit-level permissions consumed by modules/delivery_board.py (page
+# visibility above controls what you can SEE; this controls what you can DO).
+#   edit_tasks     – move/advance any task on the kanban board
+#   edit_own_tasks – move only tasks whose owner matches the chosen identity
+#   edit_stage     – advance the project lifecycle stage
+#   edit_rag       – change the project health (RAG)
+#   view_finance   – see budget / actuals on the delivery board
+ROLE_PERMISSIONS = {
+    "Admin": ["edit_tasks", "edit_stage", "edit_rag", "view_finance"],
+    "PM": ["edit_tasks", "edit_stage", "edit_rag", "view_finance"],
+    "Sponsor": ["view_finance"],
+    "Team Member": ["edit_tasks"],
+    "Vendor": ["edit_own_tasks"],
+    "Customer": [],
 }
 
 # --- AI (optional) --------------------------------------------------------

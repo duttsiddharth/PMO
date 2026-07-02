@@ -19,6 +19,7 @@ except Exception:
 from modules import (
     dashboard, initiation, planning, resources, budget, raid, change, vendors,
     status_report, meetings, migration, pmo_compliance, reports, data_management,
+    delivery_board,
 )
 from modules import quality as quality_mod
 
@@ -31,6 +32,7 @@ init_db()
 # Navigation registry: label -> (callable, icon)
 NAV = {
     "Executive Dashboard": dashboard.render,
+    "Delivery Board": delivery_board.render,
     "Project Initiation": initiation.render,
     "Project Planning": planning.render,
     "Resource Management": resources.render,
@@ -135,6 +137,7 @@ def main():
     )
 
     role = st.sidebar.selectbox("Role", config.ROLES, index=1)  # default PM
+    st.session_state["role"] = role
     theme = st.sidebar.radio("Theme", ["Dark", "Light"], horizontal=True)
     from modules import theme as _theme
     _theme.inject_css(dark=(theme == "Dark"))
