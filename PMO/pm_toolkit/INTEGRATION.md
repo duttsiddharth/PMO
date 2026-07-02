@@ -16,6 +16,9 @@
 - `modules/delivery_board.py`  (new)
 - `config.py`                  (ROLES, STAGES, ROLE_VISIBILITY, ROLE_PERMISSIONS)
 - `app.py`                     (import + NAV entry + role in session_state)
+- `core/seed.py`               (all company, vendor, brand and client personal
+                                names replaced with fictional/generic ones —
+                                client is now 'Meridian Group')
 
 ## No migration needed
 Rail stages map to the existing Project.status values; "Blocked" is just a
