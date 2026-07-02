@@ -1,7 +1,7 @@
-"""Seed the database with a realistic Royal FRS delivery programme.
+"""Seed the database with a realistic Meridian Group delivery programme.
 
 Content is grounded in the "Global WAN, LAN, UC&C and Security Services" RFP
-(customer: Royal FRS; advisor: Tam Tam Consulting). Four in-flight delivery
+(customer: Meridian Group (fictional); advisor: Advisory Partner Co (fictional)). Four in-flight delivery
 projects model the four service towers, with RFP-accurate scope, in-scope
 countries, site types, SLA tiers, licence volumes and risks.
 
@@ -43,16 +43,16 @@ def seed() -> None:
     s.add_all([
         m.User(name="Siddharth Dutt", email="pm@sdadvisory.io", role="PM"),
         m.User(name="Admin", email="admin@sdadvisory.io", role="Admin"),
-        m.User(name="Wim van Eck", email="wim.vaneck@frs.com", role="Customer"),
-        m.User(name="Gert Torfs", email="gert.torfs@tamtamconsulting.com", role="Team Member"),
+        m.User(name="Client Sponsor", email="sponsor@meridiangroup.example", role="Customer"),
+        m.User(name="Advisor PMO Lead", email="pmo@advisorypartner.example", role="Team Member"),
     ])
 
     # --- Shared resource pool -------------------------------------------
     resources = [
         m.Resource(name="N. Rao", role="WAN / Network Architect", skills="MPLS,SD-WAN,BGP,WAAS,QoS", cost_rate=95, capacity_hours=40),
         m.Resource(name="P. Mehta", role="Security / SOC Lead", skills="SIEM,IPS,Segmentation,Vuln Mgmt,Threat Intel", cost_rate=98, capacity_hours=40),
-        m.Resource(name="R. Khan", role="UC&C Consultant", skills="Skype for Business,Enterprise Voice,SIP,Conferencing", cost_rate=88, capacity_hours=40),
-        m.Resource(name="L. Novak", role="LAN / WLAN Engineer", skills="Cisco LAN,WLAN,NAC,802.1X", cost_rate=82, capacity_hours=40),
+        m.Resource(name="R. Khan", role="UC&C Consultant", skills="Enterprise UC,Enterprise Voice,SIP,Conferencing", cost_rate=88, capacity_hours=40),
+        m.Resource(name="L. Novak", role="LAN / WLAN Engineer", skills="Enterprise LAN,WLAN,NAC,802.1X", cost_rate=82, capacity_hours=40),
         m.Resource(name="M. Silva", role="Transition Manager", skills="Transition,Service Mgmt,ITIL", cost_rate=90, capacity_hours=40),
         m.Resource(name="S. Iyer", role="PMO Coordinator", skills="Scheduling,Reporting,RAID", cost_rate=60, capacity_hours=40),
     ]
@@ -61,12 +61,12 @@ def seed() -> None:
 
     # --- Vendors ---------------------------------------------------------
     vendors = [
-        m.Vendor(name="Global MPLS Carrier", category="Connectivity", contact="service@carrier.com", sla_target="99.90% availability", sla_status="On Track"),
-        m.Vendor(name="Cisco Systems", category="Hardware", contact="acct@cisco.com", sla_target="NBD hardware / WAAS", sla_status="On Track"),
-        m.Vendor(name="Microsoft (Skype for Business)", category="UC&C Licensing", contact="licensing@microsoft.com", sla_target="99.9% cloud", sla_status="On Track"),
-        m.Vendor(name="Managed SOC / SIEM Provider", category="Security", contact="soc@secprovider.com", sla_target="15m P1 response", sla_status="At Risk"),
-        m.Vendor(name="Palo Alto Networks", category="Security", contact="sales@paloalto.com", sla_target="4h critical", sla_status="On Track"),
-        m.Vendor(name="Local ISP (EU)", category="Connectivity", contact="noc@eu-isp.com", sla_target="99.5% uptime", sla_status="On Track"),
+        m.Vendor(name="Global MPLS Carrier", category="Connectivity", contact="service@carrier.example", sla_target="99.90% availability", sla_status="On Track"),
+        m.Vendor(name="Network Hardware OEM", category="Hardware", contact="accounts@hw-oem.example", sla_target="NBD hardware / WAN optimisation", sla_status="On Track"),
+        m.Vendor(name="UC&C Platform Vendor", category="UC&C Licensing", contact="licensing@uc-vendor.example", sla_target="99.9% cloud", sla_status="On Track"),
+        m.Vendor(name="Managed SOC / SIEM Provider", category="Security", contact="soc@secprovider.example", sla_target="15m P1 response", sla_status="At Risk"),
+        m.Vendor(name="Firewall OEM", category="Security", contact="sales@fw-oem.example", sla_target="4h critical", sla_status="On Track"),
+        m.Vendor(name="Local ISP (EU)", category="Connectivity", contact="noc@eu-isp.example", sla_target="99.5% uptime", sla_status="On Track"),
     ]
     s.add_all(vendors)
     s.flush()
@@ -75,14 +75,14 @@ def seed() -> None:
     # --- Programme: four service towers ---------------------------------
     specs = [
         dict(
-            code="PRJ-WAN-001", name="Royal FRS Global WAN (EMEA) Managed Service",
+            code="PRJ-WAN-001", name="Meridian Group Global WAN (EMEA) Managed Service",
             project_type="WAN", region="EMEA", status="Execution", health="Amber",
             budget=2_400_000, pct=52,
             business_case="Deliver a fully managed hybrid WAN underpinning Route 2020's cloud-first "
                           "direction (SAP and key apps moving to scalable cloud hosting).",
-            scope="Fully managed hybrid WAN across FRS EMEA locations: primary MPLS with secondary "
+            scope="Fully managed hybrid WAN across client EMEA locations: primary MPLS with secondary "
                   "Internet (IPsec) backup; dual-MPLS with two CPE and provider POP diversity for "
-                  "High-Availability sites (types E/F) and trusted datacentres; dual Cisco WAAS; "
+                  "High-Availability sites (types E/F) and trusted datacentres; dual WAN-acceleration appliances; "
                   "24x7 operational, change and service management.",
             objectives="Meet 99.90% availability / 99.50% performance for High-Availability sites; "
                         "rationalise carriers; guarantee POP and local-tail diversity; reduce WAN opex.",
@@ -93,10 +93,10 @@ def seed() -> None:
                         "infrastructure; frozen change windows over quarter-end.",
             success_criteria="99.90%/99.50% SLA met on HA sites; zero P1 at cutover; validated POP/tail diversity.",
             phases=["Initiation", "HLD / LLD Design", "Carrier Procurement", "Build & Stage", "Site Migration", "Transition & Hypercare"],
-            vendors=["Global MPLS Carrier", "Cisco Systems", "Local ISP (EU)"],
+            vendors=["Global MPLS Carrier", "Network Hardware OEM", "Local ISP (EU)"],
             risks=[
                 ("POP / local-tail diversity unavailable in some metros", "N. Rao", "High", 4, 4,
-                 "Engage second tail provider early; document exceptions with FRS.", 18),
+                 "Engage second tail provider early; document exceptions with the client.", 18),
                 ("Site type Q restriction blocks Internet secondary in China", "M. Silva", "High", 4, 5,
                  "Apply management exception; dual-MPLS with 50% secondary per RFP.", 25),
                 ("MPLS tail circuit lead times slip the migration wave", "N. Rao", "Medium", 3, 4,
@@ -104,11 +104,11 @@ def seed() -> None:
             ],
             issues=[("Dual-CPE physical separation not met at one HA site", "N. Rao", "High", 4, 4,
                      "Re-cable to separate risers; re-validate diversity.", 6)],
-            deps=[("FRS to confirm trusted-datacentre change windows", "Wim van Eck", "Medium", 3, 4, 8)],
+            deps=[("Client to confirm trusted-datacentre change windows", "Client Sponsor", "Medium", 3, 4, 8)],
             migration=[(c, t) for c, t in COUNTRIES],
         ),
         dict(
-            code="PRJ-LAN-002", name="Royal FRS Managed LAN / WLAN (Global)",
+            code="PRJ-LAN-002", name="Meridian Group Managed LAN / WLAN (Global)",
             project_type="LAN", region="Global", status="Execution", health="Green",
             budget=1_150_000, pct=34,
             business_case="Standardise and manage LAN/WLAN globally to support secure, flexible and "
@@ -123,7 +123,7 @@ def seed() -> None:
             constraints="Factory-floor RF environments; production-hours access restrictions.",
             success_criteria="Segmentation enforced; NAC live; wireless coverage SLAs met at all sites.",
             phases=["Initiation", "Site Survey & Design", "Hardware Procurement", "Install & Config", "Cutover", "Hypercare"],
-            vendors=["Cisco Systems", "Palo Alto Networks"],
+            vendors=["Network Hardware OEM", "Firewall OEM"],
             risks=[
                 ("Factory-floor AP density insufficient for coverage", "L. Novak", "Medium", 3, 3,
                  "RF survey per site; add APs where needed.", 20),
@@ -132,28 +132,28 @@ def seed() -> None:
             ],
             issues=[("Legacy access switches fail firmware baseline", "L. Novak", "Medium", 3, 3,
                      "Stage firmware upgrade before install.", 5)],
-            deps=[("FRS to provide comms-room access & cabling records", "Wim van Eck", "Medium", 3, 3, 10)],
+            deps=[("Client to provide comms-room access & cabling records", "Client Sponsor", "Medium", 3, 3, 10)],
             migration=[(c, "LAN/WLAN") for c, _ in COUNTRIES[:8]],
         ),
         dict(
-            code="PRJ-UCC-003", name="Royal FRS UC&C on Skype for Business (Global)",
+            code="PRJ-UCC-003", name="Meridian Group UC&C Platform Rollout (Global)",
             project_type="Unified Communications", region="Global", status="Execution", health="Amber",
             budget=1_450_000, pct=45,
             business_case="Provide a single global UC&C service (IM, presence, desktop sharing, voice "
                           "and video) as a productivity and user-satisfaction pillar of Route 2020.",
-            scope="Integrated UC&C on Skype for Business: Instant Messaging, presence, desktop sharing, "
+            scope="Integrated UC&C on the enterprise UC platform: Instant Messaging, presence, desktop sharing, "
                   "point-to-point and conferencing Voice & Video, enterprise-voice add-on; migration of "
                   "K1 (7,300), E1 (9,400) and E3 (13,300) licences; adoption across worker profiles.",
             objectives="Retire legacy telephony; enable conferencing add-on; achieve end-user "
                         "satisfaction KPI (Apdex/perception) as a strategic pillar.",
             deliverables="Voice routing design, provisioning runbooks, adoption plan, training collateral.",
-            assumptions="WAN QoS in place for voice; licence entitlements confirmed by FRS.",
-            constraints="Skype for Business platform roadmap; factory-worker (47%) low-touch adoption.",
+            assumptions="WAN QoS in place for voice; licence entitlements confirmed by the client.",
+            constraints="UC platform vendor roadmap; factory-worker (47%) low-touch adoption.",
             success_criteria="Voice quality within targets; adoption per profile; user-satisfaction KPI met.",
             phases=["Initiation", "Design & Voice Routing", "Licensing & Provisioning", "Pilot", "Global Rollout", "Adoption & Hypercare"],
-            vendors=["Microsoft (Skype for Business)", "Cisco Systems"],
+            vendors=["UC&C Platform Vendor", "Network Hardware OEM"],
             risks=[
-                ("Platform roadmap shift (SfB to Teams) mid-rollout", "R. Khan", "High", 3, 4,
+                ("UC platform roadmap shift (vendor migration) mid-rollout", "R. Khan", "High", 3, 4,
                  "Track vendor roadmap; keep migration path option open.", 22),
                 ("Factory-worker adoption (47% of base) lags target", "M. Silva", "Medium", 4, 3,
                  "Shared-device kiosks; floor-manager champions.", 28),
@@ -161,15 +161,15 @@ def seed() -> None:
                  "Enforce QoS/CAC; monitor Apdex per site.", 15),
             ],
             issues=[("Licence true-up gap on E3 conferencing add-on", "S. Iyer", "Medium", 3, 3,
-                     "Reconcile entitlements with FRS procurement.", 7)],
-            deps=[("FRS to confirm number ranges & carrier SIP trunks", "Debby Michels", "High", 4, 4, 12)],
+                     "Reconcile entitlements with the client procurement.", 7)],
+            deps=[("Client to confirm number ranges & carrier SIP trunks", "Client Procurement Lead", "High", 4, 4, 12)],
             migration=[(c, "UC&C Wave") for c, _ in COUNTRIES[:10]],
         ),
         dict(
-            code="PRJ-SEC-004", name="Royal FRS Security Services & SOC (Global)",
+            code="PRJ-SEC-004", name="Meridian Group Security Services & SOC (Global)",
             project_type="Security", region="Global", status="Execution", health="Red",
             budget=1_800_000, pct=28,
-            business_case="Establish managed security services and a 24x7 SOC to protect FRS's global "
+            business_case="Establish managed security services and a 24x7 SOC to protect the client's global "
                           "estate and support secure access anywhere, on any device.",
             scope="Secure segmentation and firewall firmware management; Intrusion Prevention; "
                   "vulnerability management (authenticated scans); threat-intelligence integration; "
@@ -179,29 +179,29 @@ def seed() -> None:
                         "threat intel; meet log-retention compliance; reduce security incidents.",
             deliverables="Security architecture, segmentation policy, SIEM use-cases, IR playbooks, "
                          "vuln-management schedule, SOC service handover.",
-            assumptions="FRS provides asset inventory and scan credentials; log sources reachable.",
+            assumptions="Client provides asset inventory and scan credentials; log sources reachable.",
             constraints="EU data-residency/privacy for log storage; segmentation impact on legacy apps.",
             success_criteria="SOC live with agreed use-cases; 15m P1 response; log retention compliant.",
             phases=["Initiation", "Architecture & Policy", "SIEM / SOC Build", "Log Onboarding & Tuning", "Vuln & Threat Intel", "Hypercare"],
-            vendors=["Managed SOC / SIEM Provider", "Palo Alto Networks"],
+            vendors=["Managed SOC / SIEM Provider", "Firewall OEM"],
             risks=[
                 ("SIEM log-source onboarding delayed, use-cases not live", "P. Mehta", "Critical", 5, 5,
                  "Prioritise crown-jewel sources; phased use-case go-live.", 10),
                 ("EU data-residency constraints on log storage location", "M. Silva", "High", 4, 4,
-                 "EU-region log store; DPA review with FRS legal.", 14),
+                 "EU-region log store; DPA review with the client legal.", 14),
                 ("Segmentation policy breaks legacy application flows", "P. Mehta", "High", 4, 4,
                  "Discovery + monitor-mode before enforce; staged rollout.", 20),
             ],
-            issues=[("Scan credentials not yet provisioned by FRS", "Wim van Eck", "High", 4, 4,
+            issues=[("Scan credentials not yet provisioned by the client", "Client Sponsor", "High", 4, 4,
                      "Escalate; interim unauthenticated scans.", 4)],
-            deps=[("FRS to define vuln-scan scope & first-responder contacts", "Debby Michels", "High", 4, 5, 6)],
+            deps=[("Client to define vuln-scan scope & first-responder contacts", "Client Procurement Lead", "High", 4, 5, 6)],
             migration=[(c, "SOC Onboarding") for c, _ in COUNTRIES[:6]],
         ),
     ]
 
     for spec in specs:
         p = m.Project(
-            code=spec["code"], name=spec["name"], customer="Royal FRS",
+            code=spec["code"], name=spec["name"], customer="Meridian Group",
             project_type=spec["project_type"], region=spec["region"],
             pm_name="Siddharth Dutt", status=spec["status"], health=spec["health"],
             start_date=_d(-150), end_date=_d(180), budget=spec["budget"],
@@ -216,14 +216,14 @@ def seed() -> None:
 
         # Stakeholders (RFP-accurate) + RACI
         s.add_all([
-            m.Stakeholder(project_id=p.id, name="Wim van Eck", org="Royal FRS", role="RFP Sponsor / Contact",
-                          influence="High", interest="High", raci="A", contact="wim.vaneck@frs.com"),
-            m.Stakeholder(project_id=p.id, name="Debby Michels", org="Royal FRS", role="Procurement Lead",
-                          influence="High", interest="Medium", raci="C", contact="debby.michels@frs.com"),
-            m.Stakeholder(project_id=p.id, name="Gert Torfs", org="Tam Tam Consulting", role="Advisor / PMO",
-                          influence="Medium", interest="High", raci="C", contact="gert.torfs@tamtamconsulting.com"),
-            m.Stakeholder(project_id=p.id, name="FRS Service Desk", org="Royal FRS", role="SPOC (operating model)",
-                          influence="Low", interest="Medium", raci="I", contact="servicedesk@frs.com"),
+            m.Stakeholder(project_id=p.id, name="Client Sponsor", org="Meridian Group", role="RFP Sponsor / Contact",
+                          influence="High", interest="High", raci="A", contact="sponsor@meridiangroup.example"),
+            m.Stakeholder(project_id=p.id, name="Client Procurement Lead", org="Meridian Group", role="Procurement Lead",
+                          influence="High", interest="Medium", raci="C", contact="procurement@meridiangroup.example"),
+            m.Stakeholder(project_id=p.id, name="Advisor PMO Lead", org="Advisory Partner Co", role="Advisor / PMO",
+                          influence="Medium", interest="High", raci="C", contact="pmo@advisorypartner.example"),
+            m.Stakeholder(project_id=p.id, name="Client Service Desk", org="Meridian Group", role="SPOC (operating model)",
+                          influence="Low", interest="Medium", raci="I", contact="servicedesk@meridiangroup.example"),
             m.Stakeholder(project_id=p.id, name="Delivery Lead", org="SD Advisory", role="Tower Delivery",
                           influence="Medium", interest="High", raci="R", contact="delivery@sdadvisory.io"),
         ])
@@ -290,7 +290,7 @@ def seed() -> None:
             s.add(m.RaidItem(project_id=p.id, category="Dependency", title=title, owner=owner, severity=sev,
                              probability=prob, impact=imp, due_date=_d(due), status="Open"))
         s.add(m.RaidItem(project_id=p.id, category="Assumption",
-                         title="FRS Service Desk remains SPOC per standard operating model",
+                         title="Client Service Desk remains SPOC per standard operating model",
                          owner="M. Silva", severity="Low", probability=2, impact=2, status="Open"))
 
         # Change requests
@@ -299,24 +299,24 @@ def seed() -> None:
                             description="Add newly acquired sites to in-scope estate",
                             justification="Route 2020 M&A activity added locations.",
                             scope_impact="Additional sites", cost_impact=round(spec["budget"] * 0.05, 0),
-                            schedule_impact_days=21, raised_by="Wim van Eck", approver="Debby Michels",
+                            schedule_impact_days=21, raised_by="Client Sponsor", approver="Client Procurement Lead",
                             status="Under Review", raised_on=_d(-10)),
             m.ChangeRequest(project_id=p.id, cr_number=f"CR-{p.id}02",
                             description="Uplift monitoring / reporting to enhanced SLA tier",
                             justification="Business-continuity pillar of Route 2020.",
                             scope_impact="Service tier", cost_impact=round(spec["budget"] * 0.03, 0),
-                            schedule_impact_days=7, raised_by="Gert Torfs", approver="Debby Michels",
+                            schedule_impact_days=7, raised_by="Advisor PMO Lead", approver="Client Procurement Lead",
                             status="Approved", raised_on=_d(-30)),
         ])
 
         # Meetings + actions
-        mtg = m.Meeting(project_id=p.id, title="FRS Weekly Delivery Governance", meeting_date=_d(-3),
-                        attendees="Siddharth Dutt, Wim van Eck, Gert Torfs, Delivery Lead",
+        mtg = m.Meeting(project_id=p.id, title="Client Weekly Delivery Governance", meeting_date=_d(-3),
+                        attendees="Siddharth Dutt, Client Sponsor, Advisor PMO Lead, Delivery Lead",
                         agenda="Progress vs plan, RAID, SLA readiness, decisions",
                         minutes="Reviewed migration wave plan and top risks; SLA reporting walkthrough.",
-                        decisions="Proceed with phased wave cutover; escalate open FRS dependencies.")
+                        decisions="Proceed with phased wave cutover; escalate open client dependencies.")
         mtg.action_items = [
-            m.ActionItem(description="Close out open FRS-side dependency", owner="Wim van Eck", due_date=_d(5), status="Open"),
+            m.ActionItem(description="Close out open client-side dependency", owner="Client Sponsor", due_date=_d(5), status="Open"),
             m.ActionItem(description="Circulate updated wave schedule", owner="S. Iyer", due_date=_d(2), status="Open"),
         ]
         s.add(mtg)
@@ -348,13 +348,13 @@ def seed() -> None:
         # Lessons (mapped to RFP value pillars)
         s.add_all([
             m.LessonLearned(project_id=p.id, category="Success", summary="Early carrier/vendor engagement protected the wave schedule"),
-            m.LessonLearned(project_id=p.id, category="Challenge", summary="FRS-side dependencies (credentials, windows) drove most slippage"),
+            m.LessonLearned(project_id=p.id, category="Challenge", summary="Client-side dependencies (credentials, windows) drove most slippage"),
             m.LessonLearned(project_id=p.id, category="Recommendation", summary="Track user-experience Apdex from day one to evidence the UX pillar"),
         ])
 
     s.commit()
     s.close()
-    print("Seeded Royal FRS programme: 4 delivery projects (WAN, LAN/WLAN, UC&C, Security) "
+    print("Seeded Meridian Group programme: 4 delivery projects (WAN, LAN/WLAN, UC&C, Security) "
           "grounded in the RFP.")
 
 
