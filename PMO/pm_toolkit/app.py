@@ -19,7 +19,7 @@ except Exception:
 from modules import (
     dashboard, initiation, planning, resources, budget, raid, change, vendors,
     status_report, meetings, migration, pmo_compliance, reports, data_management,
-    delivery_board,
+    delivery_board, kb_intake,
 )
 from modules import quality as quality_mod
 
@@ -34,6 +34,7 @@ NAV = {
     "Executive Dashboard": dashboard.render,
     "Delivery Board": delivery_board.render,
     "Project Initiation": initiation.render,
+    "Knowledge Intake (KB)": kb_intake.render,
     "Project Planning": planning.render,
     "Resource Management": resources.render,
     "Budget & Financials": budget.render,
