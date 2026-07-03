@@ -81,3 +81,85 @@ def predict_schedule_delay(evm) -> str:
         f"{severity.capitalize()} delay risk: SPI {evm.spi:.2f}. At current performance the "
         f"remaining work will take longer than baselined — replan the critical path."
     )
+
+
+# --------------------------------------------------------------------------
+# Knowledge intake: extract project fields from RFP / SOW / design documents
+# --------------------------------------------------------------------------
+_KB_FIELDS = ["name", "customer", "project_type", "region", "business_case",
+              "scope", "objectives", "deliverables", "assumptions",
+              "constraints", "success_criteria"]
+
+_HEADING_MAP = {
+    "business_case": ["business case", "background", "introduction", "purpose", "context"],
+    "scope": ["scope of work", "scope of services", "scope", "statement of work"],
+    "objectives": ["objectives", "goals", "project objectives"],
+    "deliverables": ["deliverables", "expected deliverables", "outputs"],
+    "assumptions": ["assumptions"],
+    "constraints": ["constraints", "limitations", "dependencies and constraints"],
+    "success_criteria": ["success criteria", "acceptance criteria", "kpis",
+                         "service levels", "sla"],
+}
+
+
+def _heuristic_extract(text: str) -> dict:
+    """Deterministic fallback: pull sections that follow known headings."""
+    import re
+    out = {k: "" for k in _KB_FIELDS}
+    lines = text.splitlines()
+    # Index every line that looks like a heading for one of our fields.
+    hits = []  # (line_no, field)
+    for i, ln in enumerate(lines):
+        bare = re.sub(r"^[\d\.\)\s#*·-]+", "", ln).strip().lower().rstrip(":")
+        if not bare or len(bare) > 60:
+            continue
+        for field, aliases in _HEADING_MAP.items():
+            if any(bare == a or bare.startswith(a) for a in aliases):
+                hits.append((i, field))
+                break
+    hits.sort()
+    for n, (i, field) in enumerate(hits):
+        end = hits[n + 1][0] if n + 1 < len(hits) else min(len(lines), i + 40)
+        body = "\n".join(l.strip() for l in lines[i + 1:end] if l.strip())
+        if body and not out[field]:
+            out[field] = body[:1500]
+    return out
+
+
+def extract_project_fields(text: str, doc_type: str = "RFP") -> dict:
+    """Extract charter-style project fields from a document's text.
+
+    Uses the Anthropic API when configured (rich, cross-referenced
+    extraction); otherwise falls back to deterministic heading-based parsing
+    so the feature still works fully offline. Returns a dict with the keys in
+    _KB_FIELDS plus 'milestones' (list of str) and 'risks' (list of str).
+    """
+    snippet = text[:24000]  # keep the prompt bounded
+    prompt = (
+        f"You are a senior IT infrastructure PM. Below is the text of a {doc_type}. "
+        "Extract the following as strict JSON with EXACTLY these keys and no "
+        "other text, no markdown fences: "
+        '{"name": "short project name", "customer": "", "project_type": "", '
+        '"region": "", "business_case": "", "scope": "", "objectives": "", '
+        '"deliverables": "", "assumptions": "", "constraints": "", '
+        '"success_criteria": "", "milestones": ["..."], "risks": ["..."]}. '
+        "Each text field: concise (max ~120 words), factual, drawn only from the "
+        "document; empty string if absent. milestones: up to 6 key phases/dates. "
+        "risks: up to 6 delivery risks stated or implied.\n\nDOCUMENT:\n" + snippet
+    )
+    raw = _call_anthropic(prompt, system="Return strict JSON only.")
+    if raw:
+        import json, re
+        raw = re.sub(r"^```(json)?|```$", "", raw.strip(), flags=re.M).strip()
+        try:
+            data = json.loads(raw)
+            out = {k: str(data.get(k, "") or "") for k in _KB_FIELDS}
+            out["milestones"] = [str(x) for x in data.get("milestones", [])][:6]
+            out["risks"] = [str(x) for x in data.get("risks", [])][:6]
+            out["_engine"] = "AI"
+            return out
+        except Exception:
+            pass  # fall through to heuristic
+    out = _heuristic_extract(text)
+    out["milestones"], out["risks"], out["_engine"] = [], [], "heuristic"
+    return out
