@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 
 from core import models as m
-from modules.common import project_picker, get_session, section_title
+from modules.common import project_picker, get_session, section_title, macd_panel
 
 
 def render():
@@ -33,6 +33,8 @@ def render():
 
     with tab_stake:
         st.markdown("**Stakeholder Register**")
+        macd_panel(m.Stakeholder, scope_fk="project_id", scope_id=p.id,
+                   key=f"macd_stake_{p.id}", label="Stakeholders")
         data = pd.DataFrame([{ "Name": x.name, "Org": x.org, "Role": x.role,
                                "Influence": x.influence, "Interest": x.interest,
                                "RACI": x.raci, "Contact": x.contact} for x in p.stakeholders])

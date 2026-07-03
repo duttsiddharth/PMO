@@ -4,7 +4,8 @@ import plotly.graph_objects as go
 import streamlit as st
 from modules.theme import style_fig
 
-from modules.common import project_picker, get_session, section_title, list_projects
+from modules.common import project_picker, get_session, section_title, list_projects, macd_panel
+from core import models as m
 
 
 def render():
@@ -24,6 +25,8 @@ def render():
         st.plotly_chart(style_fig(fig), width='stretch', config={"displayModeBar": False})
 
     p = project_picker(key="pmo_proj")
+    macd_panel(m.ComplianceItem, scope_fk="project_id", scope_id=p.id,
+               key=f"macd_comp_{p.id}", label="Compliance artifacts")
     s = get_session()
     total = len(p.compliance) or 1
     done = sum(1 for c in p.compliance if c.complete)

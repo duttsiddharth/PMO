@@ -5,12 +5,16 @@ import streamlit as st
 from modules.theme import style_fig
 
 from core import models as m
-from modules.common import project_picker, get_session, section_title
+from modules.common import project_picker, get_session, section_title, macd_panel
 
 
 def render():
     section_title("Project Planning", "WBS, schedule, critical path and milestones")
     p = project_picker(key="plan_proj")
+    macd_panel(m.WBSTask, scope_fk="project_id", scope_id=p.id,
+               key=f"macd_wbs_{p.id}", label="WBS tasks")
+    macd_panel(m.Milestone, scope_fk="project_id", scope_id=p.id,
+               key=f"macd_ms_{p.id}", label="Milestones")
     s = get_session()
 
     tab_wbs, tab_gantt, tab_ms = st.tabs(["WBS & Dependencies", "Gantt Chart", "Milestones"])

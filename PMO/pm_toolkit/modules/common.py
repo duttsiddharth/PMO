@@ -54,6 +54,19 @@ def section_title(text: str, subtitle: str = ""):
     header(text, subtitle)
 
 
+def macd_panel(model, *, scope_fk=None, scope_id=None, key, label):
+    """Role-gated inline MACD (Move/Add/Change/Delete) grid for any entity.
+
+    Renders the generic editable grid inside an expander. Only Admin and PM
+    may modify records; other roles simply don't see the panel.
+    """
+    if st.session_state.get("role", "Customer") not in ("Admin", "PM"):
+        return
+    from core.crud import editable_grid
+    with st.expander(f"🛠 MACD — {label} (add / change / delete records)"):
+        editable_grid(model, scope_fk=scope_fk, scope_id=scope_id, key=key)
+
+
 def project_picker(key="proj"):
     projects = list_projects()
     if not projects:

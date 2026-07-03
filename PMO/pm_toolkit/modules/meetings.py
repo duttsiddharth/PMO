@@ -3,12 +3,14 @@ import pandas as pd
 import streamlit as st
 
 from core import models as m
-from modules.common import project_picker, get_session, section_title
+from modules.common import project_picker, get_session, section_title, macd_panel
 
 
 def render():
     section_title("Meeting Management", "Agenda, minutes, decisions and action tracking")
     p = project_picker(key="meet_proj")
+    macd_panel(m.Meeting, scope_fk="project_id", scope_id=p.id,
+               key=f"macd_meet_{p.id}", label="Meetings")
     s = get_session()
 
     for mtg in sorted(p.meetings, key=lambda x: (x.meeting_date or ""), reverse=True):
