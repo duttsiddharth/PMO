@@ -319,3 +319,29 @@ class LessonLearned(Base):
     summary = Column(Text)
     detail = Column(Text, default="")
     project = relationship("Project", back_populates="lessons")
+
+
+# --------------------------------------------------------------------------
+# Portfolio snapshots (EVM trend history)
+# --------------------------------------------------------------------------
+class PortfolioSnapshot(Base):
+    """One row per project per snapshot date. Written by core.snapshots.
+
+    Purely additive table: created automatically by Base.metadata.create_all,
+    so existing SQLite/Postgres databases pick it up with no migration.
+    """
+    __tablename__ = "portfolio_snapshots"
+    id = Column(Integer, primary_key=True)
+    snap_date = Column(Date, nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    project_code = Column(String(40))
+    health = Column(String(10))
+    status = Column(String(40))
+    spi = Column(Float, default=0.0)
+    cpi = Column(Float, default=0.0)
+    percent_complete = Column(Float, default=0.0)
+    ac = Column(Float, default=0.0)
+    bac = Column(Float, default=0.0)
+    open_risks = Column(Integer, default=0)
+    open_issues = Column(Integer, default=0)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

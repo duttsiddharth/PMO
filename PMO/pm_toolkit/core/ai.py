@@ -163,3 +163,51 @@ def extract_project_fields(text: str, doc_type: str = "RFP") -> dict:
     out = _heuristic_extract(text)
     out["milestones"], out["risks"], out["_engine"] = [], [], "heuristic"
     return out
+
+
+def portfolio_summary(rows: list[dict]) -> str:
+    """Portfolio-level narrative across all projects; AI if available else templated.
+
+    `rows` is a list of dicts with keys: code, name, customer, health, status,
+    spi, cpi, pct, open_risks, open_issues.
+    """
+    if not rows:
+        return "No active projects in the portfolio."
+
+    lines = "\n".join(
+        f"- {r['code']} {r['name']} ({r['customer']}): {r['health']}, {r['status']}, "
+        f"{r['pct']:.0f}% complete, SPI {r['spi']:.2f}, CPI {r['cpi']:.2f}, "
+        f"{r['open_risks']} open risks, {r['open_issues']} open issues"
+        for r in rows
+    )
+    prompt = (
+        "Write a concise Monday-morning portfolio digest (5-8 sentences) for a "
+        "delivery head, covering overall health, the projects needing attention "
+        "and why, and one clear recommended focus for the week. Data:\n" + lines
+    )
+    ai = _call_anthropic(prompt, system="You are a pragmatic head of PMO writing for executives.")
+    if ai:
+        return ai
+
+    # Deterministic offline fallback
+    reds = [r for r in rows if r["health"] == "Red"]
+    ambers = [r for r in rows if r["health"] == "Amber"]
+    behind = [r for r in rows if r["spi"] < 0.95]
+    over = [r for r in rows if r["cpi"] < 0.95]
+    parts = [f"The portfolio has {len(rows)} active project(s): "
+             f"{len(reds)} Red, {len(ambers)} Amber, "
+             f"{len(rows) - len(reds) - len(ambers)} Green."]
+    if reds:
+        parts.append("Immediate attention: " + ", ".join(r["code"] for r in reds) + ".")
+    if behind:
+        parts.append("Behind schedule (SPI < 0.95): " + ", ".join(r["code"] for r in behind) + ".")
+    if over:
+        parts.append("Cost pressure (CPI < 0.95): " + ", ".join(r["code"] for r in over) + ".")
+    total_risks = sum(r["open_risks"] for r in rows)
+    total_issues = sum(r["open_issues"] for r in rows)
+    parts.append(f"{total_risks} open risks and {total_issues} open issues portfolio-wide.")
+    if not reds and not behind and not over:
+        parts.append("No elevated signals; recommended focus is closing open RAID items.")
+    else:
+        parts.append("Recommended focus this week: unblock the flagged projects above.")
+    return " ".join(parts)
